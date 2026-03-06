@@ -4,6 +4,8 @@ import aiohttp
 from typing import List
 from datetime import datetime
 from src.models.article import Article
+from src.utils.rate_limiter import RateLimiter
+from src.storage.markdown_storage import MarkdownStorage
 
 
 class HackerNewsFetcher:
@@ -14,6 +16,10 @@ class HackerNewsFetcher:
     """
     
     BASE_URL = "https://hacker-news.firebaseio.com/v0"
+    
+    def __init__(self):
+        self.storage = MarkdownStorage()
+        self.rate_limiter = RateLimiter(max_concurrent=10)
     
     async def fetch(self, limit: int = 30) -> List[Article]:
         """
@@ -65,28 +71,38 @@ class HackerNewsFetcher:
         url = f"{self.BASE_URL}/item/{story_id}.json"
         
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url) as response:
-                    data = await response.json()
-                    
-                    # Skip if no URL (Ask HN, etc.)
-                    if not data or not data.get('url'):
-                        return None
-                    
-                    # Convert to Article
-                    return Article(
-                        title=data.get('title', 'No Title'),
-                        url=data['url'],
-                        published_at=datetime.fromtimestamp(
-                            data.get('time', 0)
-                        ),
-                        source='hackernews',
-                        summary=data.get('text', '')[:200],  # First 200 chars
-                        score=data.get('score', 0)
-                    )
+            async with self.rate_limiter:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url) as response:
+                        data = await response.json()
+                        
+                        # Skip if no URL (Ask HN, etc.)
+                        if not data or not data.get('url'):
+                            return None
+                        
+                        # Convert to Article
+                        return Article(
+                            title=data.get('title', 'No Title'),
+                            url=data['url'],
+                            published_at=datetime.fromtimestamp(
+                                data.get('time', 0)
+                            ),
+                            source='hackernews',
+                            summary=data.get('text', '')[:200],  # First 200 chars
+                            score=data.get('score', 0)
+                        )
         except Exception as e:
             print(f"⚠️  Failed to fetch story {story_id}: {e}")
             return None
+
+    async def fetch_and_save(self, limit: int = 30) -> List[Article]:
+        """Fetch articles and save to markdown."""
+        articles = await self.fetch(limit)
+        
+        if articles:
+            self.storage.save(articles, "hackernews_articles.md")
+        
+        return articles
 
 
 # Test it
