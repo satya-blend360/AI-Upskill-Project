@@ -1,0 +1,23 @@
+# Core Async & HTTP
+aiohttp==3.9.1
+aiosqlite==0.19.0
+
+# RSS & News
+feedparser==6.0.10
+python-dateutil==2.8.2
+beautifulsoup4==4.12.2
+
+# AI Agents & LLM
+google-generativeai==0.3.1
+python-dotenv==1.0.0
+
+# Model Context Protocol (MCP)
+mcp==0.1.0
+
+# Testing & Quality
+pytest==7.4.3
+pytest-asyncio==0.23.2
+pytest-cov==4.1.0
+black==23.11.0
+isort==5.12.0
+pylint==3.0.2
