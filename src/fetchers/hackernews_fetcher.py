@@ -1,7 +1,7 @@
 """Fetch top stories from HackerNews (SOLID Refactor)."""
 import asyncio
 import aiohttp
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from src.models.article import Article
 from src.utils.rate_limiter import RateLimiter
@@ -42,7 +42,7 @@ class HackerNewsFetcher(BaseFetcher):
         stories = await asyncio.gather(*tasks)
         return [s for s in stories if s is not None]
     
-    async def _fetch_story(self, story_id: int) -> Article:
+    async def _fetch_story(self, story_id: int) -> Optional[Article]:
         url = f"{self.BASE_URL}/item/{story_id}.json"
         try:
             async with self.rate_limiter:

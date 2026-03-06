@@ -1,6 +1,6 @@
 """Save articles to markdown files."""
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from src.models.article import Article
 
@@ -30,7 +30,7 @@ class MarkdownStorage:
 {article.summary}
 """
 
-    def save(self, articles: List[Article], filename: str = None) -> Path:
+    def save(self, articles: List[Article], filename: Optional[str] = None) -> Path:
         """Save list of articles to a single Markdown file."""
         if filename is None:
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")

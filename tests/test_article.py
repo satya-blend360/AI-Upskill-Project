@@ -1,4 +1,4 @@
-"""Tests for Article model."""
+"""Tests for Article model (Updated for SRP)."""
 from src.models.article import Article
 from datetime import datetime
 import pytest
@@ -26,18 +26,5 @@ def test_article_validation():
             source="test"
         )
 
-
-def test_article_to_markdown():
-    """Test markdown conversion."""
-    article = Article(
-        title="Test Article",
-        url="https://test.com",
-        published_at=datetime.now(),
-        source="test",
-        summary="Test summary"
-    )
-    
-    md = article.to_markdown()
-    assert "Test Article" in md
-    assert "https://test.com" in md
-    assert "test" in md
+# NOTE: test_article_to_markdown removed because 
+# Article no longer handles formatting (SRP).

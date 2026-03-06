@@ -2,29 +2,23 @@
 import asyncio
 import sys
 from src.orchestrator import FetchOrchestrator
-from src.fetchers.hackernews_fetcher import HackerNewsFetcher
-from src.fetchers.rss_fetcher import RSSFetcher
-from src.fetchers.github_fetcher import GitHubTrendingFetcher
+from src.fetchers.fetcher_factory import FetcherFactory
 from src.storage.markdown_storage import MarkdownStorage
 
 
 async def main():
-    """Main function demonstrating Dependency Injection."""
+    """Main function demonstrating SOLID Architecture."""
     print("=" * 60)
-    print("  AI Agent Onboarding - News Fetcher (SOLID Version)")
+    print("  AI Agent Onboarding - News Fetcher (Professional Grade)")
     print("=" * 60)
     
-    # 1. Setup fetchers (Extension point - add new ones here!)
-    fetchers = [
-        HackerNewsFetcher(),
-        RSSFetcher("https://hnrss.org/frontpage"),
-        GitHubTrendingFetcher(), # Added with zero core code changes!
-    ]
+    # 1. Use FACTORY to get our tools (Centralized configuration)
+    fetchers = FetcherFactory.create_default_fetchers()
     
     # 2. Setup storage
     storage = MarkdownStorage()
     
-    # 3. Inject dependencies into Orchestrator
+    # 3. Inject dependencies into Orchestrator (DIP)
     orchestrator = FetchOrchestrator(fetchers=fetchers, storage=storage)
     
     try:

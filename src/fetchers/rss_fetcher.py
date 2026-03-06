@@ -1,7 +1,7 @@
 """Fetch articles from RSS feeds (SOLID Refactor)."""
 import asyncio
 import feedparser
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from dateutil import parser as date_parser
 from src.models.article import Article
@@ -40,7 +40,7 @@ class RSSFetcher(BaseFetcher):
         print(f"✅ Fetched {len(articles)} RSS articles from {self.get_source_name()}")
         return articles
     
-    def _parse_entry(self, entry) -> Article:
+    def _parse_entry(self, entry) -> Optional[Article]:
         """Parse RSS entry to Article."""
         try:
             url = entry.get('link', '')

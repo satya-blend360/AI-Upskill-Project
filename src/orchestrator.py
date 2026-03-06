@@ -1,6 +1,6 @@
 """Orchestrate multiple news fetchers (SOLID Refactor)."""
 import asyncio
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 from src.models.article import Article
 from src.fetchers.base_fetcher import BaseFetcher
 from src.storage.markdown_storage import MarkdownStorage
@@ -14,7 +14,7 @@ class FetchOrchestrator:
     depending on the BaseFetcher abstraction, not concrete classes.
     """
     
-    def __init__(self, fetchers: List[BaseFetcher], storage: MarkdownStorage = None):
+    def __init__(self, fetchers: List[BaseFetcher], storage: 'Optional[MarkdownStorage]' = None):
         """
         Initialize orchestrator with INJECTED dependencies.
         
@@ -48,7 +48,7 @@ class FetchOrchestrator:
             name = fetcher.get_source_name()
             if isinstance(result, Exception):
                 print(f"⚠️  {name} failed: {result}")
-            else:
+            elif isinstance(result, list):
                 all_articles.extend(result)
         
         # Save combined results
