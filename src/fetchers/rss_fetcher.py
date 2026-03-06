@@ -1,7 +1,7 @@
 """Fetch articles from RSS feeds."""
 import asyncio
 import feedparser
-from typing import List
+from typing import List ,Optional
 from datetime import datetime
 from dateutil import parser as date_parser
 from src.models.article import Article
@@ -52,7 +52,9 @@ class RSSFetcher:
         print(f"✅ Fetched {len(articles)} RSS articles")
         return articles
     
-    def _parse_entry(self, entry) -> Article:
+    from typing import Optional
+
+    def _parse_entry(self, entry) -> Optional[Article]:
         """Parse RSS entry to Article."""
         try:
             # Get title

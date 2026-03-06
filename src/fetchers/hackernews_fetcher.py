@@ -1,7 +1,7 @@
 """Fetch top stories from HackerNews."""
 import asyncio
 import aiohttp
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from src.models.article import Article
 from src.utils.rate_limiter import RateLimiter
@@ -66,7 +66,7 @@ class HackerNewsFetcher:
         # Filter out None (failed fetches)
         return [s for s in stories if s is not None]
     
-    async def _fetch_story(self, story_id: int) -> Article:
+    async def _fetch_story(self, story_id: int) -> Optional[Article]:
         """Fetch single story by ID."""
         url = f"{self.BASE_URL}/item/{story_id}.json"
         
@@ -88,7 +88,7 @@ class HackerNewsFetcher:
                                 data.get('time', 0)
                             ),
                             source='hackernews',
-                            summary=data.get('text', '')[:200],  # First 200 chars
+                            summary=data.get('text', '')[:1000],  # First 1000 chars
                             score=data.get('score', 0)
                         )
         except Exception as e:

@@ -65,8 +65,8 @@ class FetchOrchestrator:
         all_articles = []
         for (name, _), result in zip(self.fetchers, results):
             if isinstance(result, Exception):
-                print(f"⚠️  {name} failed: {result}")
-            else:
+                print(f"⚠️ {name} failed: {result}")
+            elif isinstance(result, list):
                 print(f"✅ {name}: {len(result)} articles")
                 all_articles.extend(result)
         

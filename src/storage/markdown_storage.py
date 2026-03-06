@@ -22,7 +22,7 @@ class MarkdownStorage:
         self.base_path = Path(base_path)
         self.base_path.mkdir(parents=True, exist_ok=True)
     
-    def save(self, articles: List[Article], filename: str = None) -> Path:
+    def save(self, articles: List[Article], filename: str = "") -> Path:
         """
         Save articles to markdown file.
         
@@ -33,7 +33,7 @@ class MarkdownStorage:
         Returns:
             Path to saved file
         """
-        if filename is None:
+        if filename == "":
             # Auto-generate filename with timestamp
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M")
             filename = f"articles_{timestamp}.md"
