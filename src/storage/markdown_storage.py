@@ -5,7 +5,10 @@ from datetime import datetime
 from src.models.article import Article
 
 
-class MarkdownStorage:
+from src.storage.base_storage import ArticleStorage
+
+
+class MarkdownStorage(ArticleStorage):
     """
     Saves articles to markdown files.
     

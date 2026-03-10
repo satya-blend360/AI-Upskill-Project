@@ -9,14 +9,17 @@ from src.fetchers.base_fetcher import BaseFetcher
 from src.services.text_cleaner import TextCleaner
 
 
+from src.strategies.rate_limit_strategy import RateLimitStrategy, SemaphoreStrategy
+
+
 class HackerNewsFetcher(BaseFetcher):
     """Fetches top stories from HackerNews API."""
     
     BASE_URL = "https://hacker-news.firebaseio.com/v0"
     
-    def __init__(self):
-        self.rate_limiter = RateLimiter(max_concurrent=10)
-        self.cleaner = TextCleaner()
+    def __init__(self, transformer=None, storage=None, rate_limiter: Optional[RateLimitStrategy] = None):
+        super().__init__(transformer, storage)
+        self.rate_limiter = rate_limiter or SemaphoreStrategy(max_concurrent=10)
     
     def get_source_name(self) -> str:
         return "hackernews"
@@ -53,17 +56,17 @@ class HackerNewsFetcher(BaseFetcher):
                         if not data or not data.get('url'):
                             return None
                         
-                        # CLEAN text using the service
-                        summary = data.get('text', '')
-                        summary = self.cleaner.clean_html(summary)
-                        summary = self.cleaner.truncate(summary, 200)
+                        # USE TRANSFORMER (SRP/DIP)
+                        if self.transformer:
+                            return self.transformer.transform_hackernews(data)
                         
+                        # Fallback if no transformer
                         return Article(
                             title=data.get('title', 'No Title'),
                             url=data['url'],
                             published_at=datetime.fromtimestamp(data.get('time', 0)),
                             source=self.get_source_name(),
-                            summary=summary,
+                            summary=data.get('text', '')[:200],
                             score=data.get('score', 0)
                         )
         except Exception as e:

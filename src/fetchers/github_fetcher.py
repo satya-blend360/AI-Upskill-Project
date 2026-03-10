@@ -18,8 +18,8 @@ class GitHubTrendingFetcher(BaseFetcher):
     
     BASE_URL = "https://api.github.com/search/repositories"
     
-    def __init__(self):
-        self.cleaner = TextCleaner()
+    def __init__(self, transformer=None, storage=None):
+        super().__init__(transformer, storage)
     
     def get_source_name(self) -> str:
         return "github_trending"
@@ -45,7 +45,12 @@ class GitHubTrendingFetcher(BaseFetcher):
                     
                     articles = []
                     for repo in data['items']:
-                        article = self._repo_to_article(repo)
+                        # USE TRANSFORMER (SRP/DIP)
+                        if self.transformer:
+                            article = self.transformer.transform_github(repo)
+                        else:
+                            article = self._repo_to_article_fallback(repo)
+                            
                         if article:
                             articles.append(article)
                     
@@ -55,21 +60,16 @@ class GitHubTrendingFetcher(BaseFetcher):
             print(f"⚠️  Failed to fetch GitHub: {e}")
             return []
             
-    def _repo_to_article(self, repo: dict) -> Article:
-        """Convert repo JSON to Article."""
+    def _repo_to_article_fallback(self, repo: dict) -> Article:
+        """Fallback parsing if no transformer provided."""
         try:
-            # Clean description
-            description = repo.get('description', 'No description')
-            description = self.cleaner.clean_html(description)
-            
             return Article(
                 title=f"{repo['full_name']} (⭐ {repo['stargazers_count']})",
                 url=repo['html_url'],
-                published_at=datetime.now(), # Trending is current
+                published_at=datetime.now(),
                 source=self.get_source_name(),
-                summary=description,
+                summary=repo.get('description', '')[:200],
                 score=repo.get('stargazers_count', 0)
             )
-        except Exception as e:
-            print(f"⚠️  Failed to parse GitHub repo: {e}")
+        except Exception:
             return None

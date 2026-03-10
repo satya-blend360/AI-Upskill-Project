@@ -12,9 +12,9 @@ from src.services.text_cleaner import TextCleaner
 class RSSFetcher(BaseFetcher):
     """Fetches articles from RSS feeds."""
     
-    def __init__(self, feed_url: str):
+    def __init__(self, feed_url: str, transformer=None, storage=None):
+        super().__init__(transformer, storage)
         self.feed_url = feed_url
-        self.cleaner = TextCleaner()
     
     def get_source_name(self) -> str:
         # Extract host from URL
@@ -33,41 +33,31 @@ class RSSFetcher(BaseFetcher):
         
         articles = []
         for entry in feed.entries[:limit]:
-            article = self._parse_entry(entry)
+            # USE TRANSFORMER (SRP/DIP)
+            if self.transformer:
+                article = self.transformer.transform_rss(entry, self.get_source_name())
+            else:
+                article = self._parse_entry_fallback(entry)
+                
             if article:
                 articles.append(article)
         
         print(f"✅ Fetched {len(articles)} RSS articles from {self.get_source_name()}")
         return articles
     
-    def _parse_entry(self, entry) -> Optional[Article]:
-        """Parse RSS entry to Article."""
+    def _parse_entry_fallback(self, entry) -> Optional[Article]:
+        """Fallback parsing if no transformer provided."""
         try:
             url = entry.get('link', '')
             if not url:
                 return None
             
-            # Use CLEANER service for summary
-            summary = entry.get('summary', entry.get('description', ''))
-            summary = self.cleaner.clean_html(summary)
-            summary = self.cleaner.truncate(summary, 200)
-            
-            # Parse date
-            published_str = entry.get('published', entry.get('updated', ''))
-            published_at = datetime.now()
-            if published_str:
-                try:
-                    published_at = date_parser.parse(published_str)
-                except:
-                    pass
-            
             return Article(
                 title=entry.get('title', 'No Title'),
                 url=url,
-                published_at=published_at,
+                published_at=datetime.now(),
                 source=self.get_source_name(),
-                summary=summary
+                summary=entry.get('summary', '')[:200]
             )
-        except Exception as e:
-            print(f"⚠️  Failed to parse RSS entry from {self.get_source_name()}: {e}")
+        except Exception:
             return None

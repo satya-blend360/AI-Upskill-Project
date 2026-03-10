@@ -6,19 +6,26 @@ from src.fetchers.fetcher_factory import FetcherFactory
 from src.storage.markdown_storage import MarkdownStorage
 
 
+from src.transformers.article_transformer import ArticleTransformer
+
+
 async def main():
     """Main function demonstrating SOLID Architecture."""
     print("=" * 60)
     print("  AI Agent Onboarding - News Fetcher (Professional Grade)")
     print("=" * 60)
     
-    # 1. Use FACTORY to get our tools (Centralized configuration)
-    fetchers = FetcherFactory.create_default_fetchers()
-    
-    # 2. Setup storage
+    # 0. Setup core services (DIP)
+    transformer = ArticleTransformer()
     storage = MarkdownStorage()
     
-    # 3. Inject dependencies into Orchestrator (DIP)
+    # 1. Use FACTORY to get our tools (Centralized configuration)
+    fetchers = FetcherFactory.create_default_fetchers(
+        transformer=transformer, 
+        storage=storage
+    )
+    
+    # 2. Setup Orchestrator (DIP)
     orchestrator = FetchOrchestrator(fetchers=fetchers, storage=storage)
     
     try:
